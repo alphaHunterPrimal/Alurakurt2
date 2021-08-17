@@ -77,7 +77,7 @@ export default function Home(props) {
     fetch('https://graphql.datocms.com/', {
       method: 'POST',
       headers: {
-        'Authorization': '7f7590695431ea76f84616a4b4d32d',
+        'Authorization': 'c2fdcbf7a0c1c041856ee6afd1063c',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
@@ -220,28 +220,26 @@ export default function Home(props) {
 }
 
 
-export async function getServerSideProps(ctx) {
-  const cookies = nookies.get(ctx);
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context)
   const token = cookies.USER_TOKEN;
-  const decodedToken = jwt.decode(token);
-  const githubUser = decodedToken?.githubUser;
+  const { isAuthenticated } = await fetch('https://alurakut.vercel.app/api/auth', {
+    headers: {
+        Authorization: token
+      }
+  })
+  .then((resposta) => resposta.json())
 
-  if (!githubUser) {
+  if(!isAuthenticated) {
     return {
       redirect: {
         destination: '/login',
         permanent: false,
-      },
+      }
     }
   }
 
-  // const followers = await fetch(`https://api.github.com/users/${githubUser}/followers`)
-  //   .then((res) => res.json())
-  //   .then(followers => followers.map((follower) => ({
-  //     id: follower.id,
-  //     name: follower.login,
-  //     image: follower.avatar_url,
-  //   })));
+  const { githubUser } = jwt.decode(token);
 
   return {
     props: {
